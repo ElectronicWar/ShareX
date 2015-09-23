@@ -75,6 +75,8 @@ namespace ShareX.UploadersLib
         Hastebin,
         [Description("OneTimeSecret")]
         OneTimeSecret,
+        [Description("Bitbucket Snippets")]
+        Snippets,
         CustomTextUploader, // Localized
         FileUploader // Localized
     }

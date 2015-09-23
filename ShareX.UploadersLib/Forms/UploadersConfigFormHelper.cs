@@ -2076,5 +2076,86 @@ namespace ShareX.UploadersLib
         }
 
         #endregion Gist
+
+        #region Snippets
+
+        private void SnippetsAuthOpen()
+        {
+            try
+            {
+                OAuth2Info oauth = new OAuth2Info(APIKeys.BitbucketClientID, APIKeys.BitbucketClientSecret);
+
+                string url = new Snippets(oauth).GetAuthorizationURL();
+
+                if (!string.IsNullOrEmpty(url))
+                {
+                    Config.SnippetsOAuth2Info = oauth;
+                    URLHelpers.OpenURL(url);
+                    DebugHelper.WriteLine("BitbucketAuthOpen - Authorization URL is opened: " + url);
+                }
+                else
+                {
+                    DebugHelper.WriteLine("BitbucketAuthOpen - Authorization URL is empty.");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString(), Resources.UploadersConfigForm_Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void SnippetsAuthComplete(string code)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(code) && Config.SnippetsOAuth2Info != null)
+                {
+                    bool result = new Snippets(Config.SnippetsOAuth2Info).GetAccessToken(code);
+
+                    if (result)
+                    {
+                        oAuth2Snippets.Status = OAuthLoginStatus.LoginSuccessful;
+                        MessageBox.Show(Resources.UploadersConfigForm_Login_successful, "ShareX", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    else
+                    {
+                        oAuth2Snippets.Status = OAuthLoginStatus.LoginFailed;
+                        MessageBox.Show(Resources.UploadersConfigForm_Login_failed, "ShareX", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString(), Resources.UploadersConfigForm_Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void SnippetsAuthRefresh()
+        {
+            try
+            {
+                if (OAuth2Info.CheckOAuth(Config.SnippetsOAuth2Info))
+                {
+                    bool result = new Snippets(Config.SnippetsOAuth2Info).RefreshAccessToken();
+
+                    if (result)
+                    {
+                        oAuth2Snippets.Status = OAuthLoginStatus.LoginSuccessful;
+                        MessageBox.Show(Resources.UploadersConfigForm_Login_successful, "ShareX", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    else
+                    {
+                        oAuth2Snippets.Status = OAuthLoginStatus.LoginFailed;
+                        MessageBox.Show(Resources.UploadersConfigForm_Login_failed, "ShareX", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString(), Resources.UploadersConfigForm_Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        #endregion Snippets
     }
 }

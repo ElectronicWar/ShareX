@@ -2285,6 +2285,42 @@ namespace ShareX.UploadersLib
 
         #endregion Twitter
 
+        #region Snippets
+
+        private void chkSnippetsPublic_CheckedChanged(object sender, EventArgs e)
+        {
+            if (((CheckBox)sender).Checked)
+            {
+                Config.SnippetsPrivacy = Privacy.Public;
+            }
+            else
+            {
+                Config.SnippetsPrivacy = Privacy.Private;
+            }
+        }
+
+        private void oAuth2Snippets_OpenButtonClicked()
+        {
+            SnippetsAuthOpen();
+        }
+
+        private void oAuth2Snippets_RefreshButtonClicked()
+        {
+            SnippetsAuthRefresh();
+        }
+
+        private void oAuth2Snippets_CompleteButtonClicked(string code)
+        {
+            SnippetsAuthComplete(code);
+        }
+
+        private void oAuth2Snippets_ClearButtonClicked()
+        {
+            Config.SnippetsOAuth2Info = null;
+        }
+
+        #endregion Snippets
+
         #region Custom Uploaders
 
         private void btnCustomUploaderAdd_Click(object sender, EventArgs e)

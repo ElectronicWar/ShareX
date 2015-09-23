@@ -207,6 +207,7 @@
     <Compile Include="ImageUploaders\VgymeUploader.cs" />
     <Compile Include="TextUploaders\Hastebin.cs" />
     <Compile Include="TextUploaders\OneTimeSecret.cs" />
+    <Compile Include="TextUploaders\Snippets.cs" />
     <Compile Include="TextUploaders\Upaste.cs" />
     <Compile Include="UploadersConfig.cs" />
     <Compile Include="Forms\UserPassBox.cs">

@@ -115,6 +115,11 @@ namespace ShareX.UploadersLib
         public string OneTimeSecretAPIKey = string.Empty;
         public string OneTimeSecretAPIUsername = string.Empty;
 
+        // Bitbucket Snippets
+
+        public Privacy SnippetsPrivacy = Privacy.Private;
+        public OAuth2Info SnippetsOAuth2Info = null;
+
         #endregion Text uploaders
 
         #region File uploaders
