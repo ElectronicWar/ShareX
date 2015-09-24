@@ -24,12 +24,10 @@
 #endregion License Information (GPL v3)
 
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using ShareX.UploadersLib.HelperClasses;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.ComponentModel;
-using System.IO;
 
 namespace ShareX.UploadersLib.TextUploaders
 {
@@ -135,160 +133,91 @@ namespace ShareX.UploadersLib.TextUploaders
 
         public override UploadResult UploadText(string text, string fileName)
         {
-            UploadResult ur = new UploadResult();
+            UploadResult uploadResult = new UploadResult();
 
             if (!string.IsNullOrEmpty(text) && !string.IsNullOrEmpty(fileName))
             {
-                var gistUploadObject = new
+                Dictionary<string, string> args = new Dictionary<string, string>();
+                NameValueCollection headers;
+
+                var SnippetsUploadObject = new
                 {
-                    @public = PublishType,
-                    files = new Dictionary<string, object>
+                    access_token = AuthInfo.Token.access_token,
+                    is_private = PublishType == Privacy.Private ? "true" : "false",
+                    file = new Dictionary<string, object>
                     {
                         { fileName, new { content = text } }
                     }
                 };
 
-                string argsJson = JsonConvert.SerializeObject(gistUploadObject);
+                headers = GetAuthHeaders();
 
-                string url = "url bla bla";
-
-                if (AuthInfo != null)
-                {
-                    url += "?access_token=" + AuthInfo.Token.access_token;
-                }
-
-                string response = SendRequestJSON(url, argsJson);
+                string url = "https://api.bitbucket.org/2.0/snippets/";
+                string argsJson = JsonConvert.SerializeObject(SnippetsUploadObject);
+                string response = SendRequestJSON(url, argsJson, headers);
 
                 if (response != null)
                 {
-                    var gistReturnType = new { html_url = string.Empty };
-                    var gistReturnObject = JsonConvert.DeserializeAnonymousType(response, gistReturnType);
-                    ur.URL = gistReturnObject.html_url;
+                    SnippetsResponse snippetsResult = JsonConvert.DeserializeObject<SnippetsResponse>(response);
+                    uploadResult.URL = snippetsResult.links.html.href;
                 }
             }
-
-            return ur;
+            return uploadResult;
         }
+    }
 
-        //public override UploadResult Upload(Stream stream, string fileName)
-        //{
-        //    Dictionary<string, string> args = new Dictionary<string, string>();
-        //    NameValueCollection headers;
+    public class SnippetsResponseLink
+    {
+        public string href { get; set; }
+    }
 
-        //    if (UploadMethod == AccountType.User)
-        //    {
-        //        if (!CheckAuthorization())
-        //        {
-        //            return null;
-        //        }
-
-        //        if (!string.IsNullOrEmpty(UploadAlbumID))
-        //        {
-        //            args.Add("album", UploadAlbumID);
-        //        }
-
-        //        headers = GetAuthHeaders();
-        //    }
-        //    else
-        //    {
-        //        headers = new NameValueCollection();
-        //        headers.Add("Authorization", "Client-ID " + AuthInfo.Client_ID);
-        //    }
-
-        //    UploadResult result = UploadData(stream, "https://api.imgur.com/3/image", fileName, "image", args, headers);
-
-        //    if (!string.IsNullOrEmpty(result.Response))
-        //    {
-        //        ImgurResponse imgurResponse = JsonConvert.DeserializeObject<ImgurResponse>(result.Response);
-
-        //        if (imgurResponse != null)
-        //        {
-        //            if (imgurResponse.success && imgurResponse.status == 200)
-        //            {
-        //                ImgurImageData imageData = ((JObject)imgurResponse.data).ToObject<ImgurImageData>();
-
-        //                if (imageData != null && !string.IsNullOrEmpty(imageData.link))
-        //                {
-        //                    if (DirectLink)
-        //                    {
-        //                        if (UseGIFV && !string.IsNullOrEmpty(imageData.gifv))
-        //                        {
-        //                            result.URL = imageData.gifv;
-        //                        }
-        //                        else
-        //                        {
-        //                            result.URL = imageData.link;
-        //                        }
-        //                    }
-        //                    else
-        //                    {
-        //                        result.URL = "http://imgur.com/" + imageData.id;
-        //                    }
-
-        //                    int index = result.URL.LastIndexOf('.');
-        //                    string thumbnail = string.Empty;
-
-        //                    switch (ThumbnailType)
-        //                    {
-        //                        case ImgurThumbnailType.Small_Square:
-        //                            thumbnail = "s";
-        //                            break;
-        //                        case ImgurThumbnailType.Big_Square:
-        //                            thumbnail = "b";
-        //                            break;
-        //                        case ImgurThumbnailType.Small_Thumbnail:
-        //                            thumbnail = "t";
-        //                            break;
-        //                        case ImgurThumbnailType.Medium_Thumbnail:
-        //                            thumbnail = "m";
-        //                            break;
-        //                        case ImgurThumbnailType.Large_Thumbnail:
-        //                            thumbnail = "l";
-        //                            break;
-        //                        case ImgurThumbnailType.Huge_Thumbnail:
-        //                            thumbnail = "h";
-        //                            break;
-        //                    }
-
-        //                    result.ThumbnailURL = string.Format("http://i.imgur.com/{0}{1}.jpg", imageData.id, thumbnail); // Thumbnails always jpg
-        //                    result.DeletionURL = "http://imgur.com/delete/" + imageData.deletehash;
-        //                }
-        //            }
-        //            else
-        //            {
-        //                HandleErrors(imgurResponse);
-        //            }
-        //        }
-        //    }
-
-        //    return result;
-        //}
-
-        private void HandleErrors(ImgurResponse response)
+    public class SnippetsResponseFile
+    {
+        public class links
         {
-            ImgurErrorData errorData = ((JObject)response.data).ToObject<ImgurErrorData>();
-
-            if (errorData != null)
-            {
-                string errorMessage = string.Format("Status: {0}, Request: {1}, Error: {2}", response.status, errorData.request, errorData.error);
-                Errors.Add(errorMessage);
-            }
+            public SnippetsResponseLink html { get; set; }
+            public SnippetsResponseLink self { get; set; }
         }
     }
 
-    public class ImgurResponse
+    public class SnippetsResponseUser
     {
-        public object data { get; set; }
-        public bool success { get; set; }
-        public int status { get; set; }
+        public string display_name { get; set; }
+
+        public class links
+        {
+            public SnippetsResponseLink avatar { get; set; }
+            public SnippetsResponseLink html { get; set; }
+            public SnippetsResponseLink self { get; set; }
+        }
+
+        public string username { get; set; }
+        public string uuid { get; set; }
     }
 
-    public class ImgurErrorData
+    public class SnippetsResponseResultLinks
     {
-        public string error { get; set; }
-        public string request { get; set; }
-        public string method { get; set; }
+        public SnippetsResponseLink comments { get; set; }
+        public SnippetsResponseLink commits { get; set; }
+        public SnippetsResponseLink diff { get; set; }
+        public SnippetsResponseLink html { get; set; }
+        public SnippetsResponseLink patch { get; set; }
+        public SnippetsResponseLink self { get; set; }
+        public SnippetsResponseLink watchers { get; set; }
     }
 
+    public class SnippetsResponse
+    {
+        public DateTime created_on { get; set; }
 
+        public SnippetsResponseUser creator { get; set; }
+        public List<SnippetsResponseFile> files { get; set; }
+        public string id { get; set; }
+        public bool is_private { get; set; }
+        public SnippetsResponseResultLinks links { get; set; }
+        public SnippetsResponseUser owner { get; set; }
+        public string scm { get; set; }
+        public string title { get; set; }
+        public DateTime updated_one { get; set; }
+    }
 }
