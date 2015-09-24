@@ -862,6 +862,17 @@ namespace ShareX
                         API_USERNAME = Program.UploadersConfig.OneTimeSecretAPIUsername
                     };
                     break;
+                case TextDestination.Snippets:
+                    if (Program.UploadersConfig.SnippetsOAuth2Info == null)
+                    {
+                        Program.UploadersConfig.SnippetsOAuth2Info = new OAuth2Info(APIKeys.BitbucketClientID, APIKeys.BitbucketClientSecret);
+                    }
+                    textUploader = new Snippets(Program.UploadersConfig.SnippetsOAuth2Info)
+                    {
+                        PublishType = Program.UploadersConfig.SnippetsPrivacy,
+                        AuthInfo = Program.UploadersConfig.SnippetsOAuth2Info
+                    };
+                    break;
                 case TextDestination.CustomTextUploader:
                     CustomUploaderItem customUploader = GetCustomUploader(Program.UploadersConfig.CustomTextUploaderSelected);
                     if (customUploader != null)

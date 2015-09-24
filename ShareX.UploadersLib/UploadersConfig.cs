@@ -382,6 +382,8 @@ namespace ShareX.UploadersLib
         {
             switch (destination)
             {
+                case TextDestination.Snippets:
+                    return OAuth2Info.CheckOAuth(SnippetsOAuth2Info);
                 case TextDestination.CustomTextUploader:
                     return CustomUploadersList != null && CustomUploadersList.IsValidIndex(CustomTextUploaderSelected);
             }

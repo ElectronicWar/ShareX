@@ -156,6 +156,7 @@ namespace ShareX.UploadersLib.TextUploaders
                 string argsJson = JsonConvert.SerializeObject(SnippetsUploadObject);
                 string response = SendRequestJSON(url, argsJson, headers);
 
+                UploadData(
                 if (response != null)
                 {
                     SnippetsResponse snippetsResult = JsonConvert.DeserializeObject<SnippetsResponse>(response);
